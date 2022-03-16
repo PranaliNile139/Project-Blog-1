@@ -26,7 +26,7 @@ router.post("/blogs", auth.authenticate, blogController.createBlog)
 
 router.get("/blogs", auth.authenticate, blogController.getBlogs)
 
-router.put("/blogs/:blogId", auth.authenticate, blogController.updateBlog)
+router.put("/blogs/:blogId", auth.authenticate,auth.authorise, blogController.updateBlog)
 
 router.delete("/blogs/:blogId", auth.authenticate, auth.authorise, blogController.deleteBlog)
 

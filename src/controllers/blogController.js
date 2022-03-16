@@ -1,21 +1,19 @@
+const { count } = require("console")
 const blogModel = require("../models/blogModel")
 const authorModel = require("../models/authorModel")
 const moment = require('moment')
-
 
 const createBlog = async function (req, res) {
     try {
         let data = req.body
         let authorId = data.authorId
-        if (Object.keys(data).length == 0) {
-            res.status(400).send({ status: false, msg: "BAD REQUEST" })
-        }
+        
         if (!authorId) {
-            res.status(400).send({ status: false, msg: "BAD REQUEST" })
+            res.status(400).send({ status: false, msg: "AuthorId must be present" })
         }
         let authorDetails = await authorModel.findById(authorId)
         if (!authorDetails) {
-            res.status(404).send({ status: false, msg: "author id not exist" })
+            res.status(404).send({ status: false, msg: "author id does not exist" })
         } else {
             let blogCreated = await blogModel.create(data)
             res.status(201).send({ status: true, data: blogCreated })
@@ -31,29 +29,17 @@ const createBlog = async function (req, res) {
 
 const getBlogs = async function (req, res) {
     try {
-        let input = req.query
-        let filters = Object.entries(input)
-        let filtersAsObject = []
-        for(let i=0 ; i<filters.length; i++){
-            let element = filters[i]
-            let obj = {}
-            obj[element[0]] = element[1]
-            filtersAsObject.push(obj)
-        }
-        let conditions = [{isDeleted : false}, {isPublished : true}]
-        let finalFilters = conditions.concat(filtersAsObject)
-           
-        if (input) {
-            let blogs = await blogModel.find({ $and : finalFilters})
-            if (blogs.length == 0)
-            res.status(400).send({ status: false, msg: "no blogs found" })
-            res.status(200).send({ status: true, data: blogs })
-        } else {
-            let blogs = await blogModel.find({ $and : conditions })
-            if (blogs.length == 0)
-            res.status(404).send({ status: false, msg: "no blogs found" })
-            res.status(200).send({ status: true, data: blogs })
-        }
+        let authorId = req.query.authorId
+        let category = req.query.category
+        let tags = req.query.tags
+        let subcategory = req.query.subcategory
+
+        let blogsData = await blogModel.find( { $or: [{authorId: authorId}, {category: category}, {tags: tags}, {subcategory: subcategory}], isDeleted: false, isPublished: true })
+        // if (blogsData.length == 0) {
+        //     res.status(404).send({ status: false, msg: "No blogs Available." })
+        // } else {
+            res.status(200).send({ status: true, data: blogsData })   
+        // }
     }
     catch (err) {
         console.log("This is the error :", err.message)
@@ -62,19 +48,21 @@ const getBlogs = async function (req, res) {
 }
 
 const updateBlog = async function (req, res) {
-    let inputData = req.body
-    let newTitle = req.body.title
-    let newBody = req.body.body
-    let newTag = req.body.tags
-    let newSubCategory = req.body.subcategory
-    let id = req.params["blogId"]
     try {
-        if (Object.keys(inputData).length == 0)
-        res.status(400).send({ status: false, msg: "please provide input data" })
-        
-        let blog = await blogModel.findByIdAndUpdate(
+        let newTitle = req.body.title
+        let newBody = req.body.body
+        let newTag = req.body.tags
+        let newSubCategory = req.body.subcategory
+        let id = req.params.blogId
+
+        let blog_id = await blogModel.findById(id)
+        if(!blog_id) {
+            res.status(404).send({ status: false, msg: "blogId doesnot exist"})
+        }
+
+        let blog = await blogModel.findOneAndUpdate(
             { _id: id},
-            { $set: { title: newTitle, body: newBody, isPublished: true, publishedAt: Date.now() }, $push: { tags: newTag, subcategory: newSubCategory } },
+            { $set: { title: newTitle, body: newBody, isPublished: true, publishedAt: new Date() }, $push: { tags: newTag, subcategory: newSubCategory } },
             { new: true }
         )
              res.status(200).send({ status: true, data: blog })
@@ -89,10 +77,16 @@ const updateBlog = async function (req, res) {
 const deleteBlog = async function (req, res) {
     try {
         let id = req.params.blogId
-        let deleted = await blogModel.findByIdAndUpdate({ _id: id }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true })
-
-        res.status(200).send(deleted)
-
+        let blog = await blogModel.findById(id)
+        if(!blog) {
+            res.status(404).send({ status: false, msg:"blog does not exist"})
+        }
+        if(blog.isDeleted == false) {
+        let deleted = await blogModel.findOneAndUpdate({ _id: id }, { isDeleted: true, deletedAt: new Date() }, { new: true })
+        res.status(200).send({status: true})
+        } else {
+            res.status(404).send({status: false, msg: "data already deleted"})
+        }
     }
     catch (err) {
         console.log("This is the error :", err.message)
@@ -100,16 +94,22 @@ const deleteBlog = async function (req, res) {
     }
 }
 
+
 const deleteBlogQuery = async function (req, res) {
     try {
-        let input = req.query
-        
-        if(Object.keys(input).length == 0)
-        res.status(400).send({status: false, msg: "please provide input data" })
-        let deletedBlog = await blogModel.updateMany({ $and: [input, { isDeleted: false }] }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true })
-        
-        res.status(200).send({msg: "Blog is already deleted"})
-    }
+        let authorId = req.query.authorId
+        let category = req.query.category
+        let tag = req.query.tag
+        let subcategory = req.query.subcategory
+
+        if(!(authorId || category || tag || subcategory)) {
+            res.status(400).send({status: false, msg: "blog data is required"})
+        } else{
+            let deletedBlog = await blogModel.deleteMany({ $or:[ { authorId: authorId}, {category: category}, {tag,tag}, {subcategory: subcategory} ] } )
+            res.status(200).send({status:true, msg: deletedBlog})
+        }
+            
+        }
     catch (err) {
         console.log("This is the error :", err.message)
         res.status(500).send({ msg: "Error", error: err.message })
