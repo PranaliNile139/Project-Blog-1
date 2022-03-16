@@ -105,7 +105,7 @@ const deleteBlogQuery = async function (req, res) {
         if(!(authorId || category || tag || subcategory)) {
             res.status(400).send({status: false, msg: "blog data is required"})
         } else{
-            let deletedBlog = await blogModel.deleteMany({ $or:[ { authorId: authorId}, {category: category}, {tag,tag}, {subcategory: subcategory} ] } )
+            let deletedBlog = await blogModel.deleteOne({ $or:[ { authorId: authorId}, {category: category}, {tag,tag}, {subcategory: subcategory} ] } )
             res.status(200).send({status:true, msg: deletedBlog})
         }
             
