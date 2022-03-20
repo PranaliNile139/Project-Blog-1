@@ -30,7 +30,7 @@ let authorise= async function (req,res,next){
         res.status(404).send({status: false, msg: "please provide valid blog ID"})
         
         if(blogs.isDeleted == true)
-        res.status(404).send({status: false, msg: "no such blog found"})
+        res.status(404).send({status: false, msg: "No such blog found as blog is already deleted"})
   
         let verifiedToken = jwt.verify(jwtToken, "group39")
         if(verifiedToken.authorId != blogs.authorId)
@@ -38,6 +38,7 @@ let authorise= async function (req,res,next){
 
         next()
     }
+    
     catch (err) {
         console.log("This is the error :", err.message)
         res.status(500).send({ msg: "Error", error: err.message })

@@ -8,28 +8,28 @@ const auth = require("../middleware/auth")
 // Phase 1
 router.post("/authors", authorController.createAuthor)
 
-router.post("/blogs", blogController.createBlog)
+// router.post("/blogs", blogController.createBlog)
 
-router.get("/blogs", blogController.getBlogs)
+// router.get("/blogs", blogController.getBlogs)
 
-router.put("/blogs/:blogId", blogController.updateBlog)
+// router.put("/blogs/:blogId", blogController.updateBlog)
 
-router.delete("/blogs/:blogId", blogController.deleteBlog)
+// router.delete("/blogs/:blogId", blogController.deleteBlog)
 
-router.delete("/blogs", blogController.deleteBlogQuery)
+// router.delete("/blogs", blogController.deleteBlogQuery)
 
 
 // Phase 2
-// router.post("/login", authorController.loginAuthor)
+router.post("/login", authorController.loginAuthor)
 
-// router.post("/blogs", auth.authenticate, blogController.createBlog)
+router.post("/blogs", auth.authenticate, blogController.createBlog)
 
-// router.get("/blogs", auth.authenticate, blogController.getBlogs)
+router.get("/blogs", auth.authenticate, blogController.getBlogs)
 
-// router.put("/blogs/:blogId", auth.authenticate,auth.authorise, blogController.updateBlog)
+router.put("/blogs/:blogId", auth.authenticate,auth.authorise, blogController.updateBlog)
 
-// router.delete("/blogs/:blogId", auth.authenticate, auth.authorise, blogController.deleteBlog)
+router.delete("/blogs/:blogId", auth.authenticate,auth.authorise, blogController.deleteBlog)
 
-// router.delete("/blogs", auth.authenticate, blogController.deleteBlogQuery)
+router.delete("/blogs", auth.authenticate, blogController.deleteBlogQuery)
 
 module.exports = router;
