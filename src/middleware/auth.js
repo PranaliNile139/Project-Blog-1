@@ -7,7 +7,7 @@ let authenticate= async function (req,res,next){
         let token = req.headers['x-api-key']
         if(!token)
         res.status(400).send({status: false, msg: "please provide token" })
-        
+         
         let validateToken = jwt.verify(token, "group39")
         if(!validateToken)
         res.status(401).send({status: false, msg: "authentication failed"})

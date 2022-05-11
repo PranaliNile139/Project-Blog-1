@@ -14,7 +14,7 @@ router.post("/authors", authorController.createAuthor)
 
 // router.put("/blogs/:blogId", blogController.updateBlog)
 
-// router.delete("/blogs/:blogId", blogController.deleteBlog)
+// router.delete("/blogs/:blogId", blogController.deleteBlog) 
 
 // router.delete("/blogs", blogController.deleteBlogQuery)
 
